@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import jsforce from "jsforce";
-import { AuthenticationClient, ManagementClient } from "auth0";
+import { AuthenticationClient } from "auth0";
 
 const auth0 = new AuthenticationClient({
   domain: process.env.AUTH0_DOMAIN as string,
@@ -60,6 +60,8 @@ const main = async () => {
               return "user exists";
             }
           }
+
+          return message;
         });
     }
   );
