@@ -3,19 +3,20 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import jsforce from "jsforce";
-import { AuthenticationClient } from "auth0";
+import { AuthenticationClient, ManagementClient } from "auth0";
 
 const auth0 = new AuthenticationClient({
   domain: process.env.AUTH0_DOMAIN as string,
   clientId: process.env.AUTH0_CLIENT_ID as string,
 });
 
-// const management = new ManagementClient({
-//   clientId: process.env.AUTH0_CLIENT_ID as string,
-//   clientSecret: process.env.AUTH0_CLIENT_SECRET as string,
-//   domain: process.env.AUTH0_DOMAIN as string,
-//   scope: "read:users update:users delete:users",
-// });
+const management = new ManagementClient({
+  clientId: process.env.AUTH0_CLIENT_ID as string,
+  clientSecret: process.env.AUTH0_CLIENT_SECRET as string,
+  domain: process.env.AUTH0_DOMAIN as string,
+  scope:
+    "read:users update:users delete:users create:users read:users_app_metadata delete:users_app_metadata",
+});
 
 const main = async () => {
   const conn = new jsforce.Connection({});
@@ -56,6 +57,17 @@ const main = async () => {
                 return response;
               }
               return "Created Account";
+            } else if (message.event.type === "deleted") {
+              const params = {
+                search_engine: "v3",
+                q: `user_metadata.sfid:"${message.sobject.Id}"`,
+              };
+
+              const user = await management.getUsers(params);
+              const deleteResponse = await management.deleteUser({
+                id: user[0].user_id as string,
+              });
+              return deleteResponse;
             } else {
               return "user exists";
             }
