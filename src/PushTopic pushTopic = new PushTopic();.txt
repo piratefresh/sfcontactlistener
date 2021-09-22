@@ -1,0 +1,10 @@
+PushTopic pushTopic = new PushTopic();
+pushTopic.Name = 'ContactsUpdates';
+pushTopic.Query = 'SELECT AccountId,Email,FirstName,Id,LastName,Name,Phone,PhotoUrl FROM Contact';
+pushTopic.ApiVersion = 51.0;
+pushTopic.NotifyForOperationCreate = true;
+pushTopic.NotifyForOperationUpdate = true;
+pushTopic.NotifyForOperationUndelete = true;
+pushTopic.NotifyForOperationDelete = true;
+pushTopic.NotifyForFields = 'Referenced';
+insert pushTopic;

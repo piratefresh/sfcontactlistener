@@ -28,7 +28,7 @@ const main = async () => {
       console.log("Authenticated");
 
       await conn.streaming
-        .topic("ContactsUpdates")
+        .topic("ContactsUpdates2")
         .subscribe(async (message: any) => {
           if (message) {
             console.log("message: ", message);
@@ -42,10 +42,11 @@ const main = async () => {
                 family_name: message.sobject.LastName,
                 name: `${message.sobject.FirstName} ${message.sobject.LastName}`,
                 password: "setvi2020",
-                email_verified: false,
+                email_verified: true,
                 // picture: "http://example.org/jdoe.png",
                 user_metadata: {
                   sfid: message.sobject.Id,
+                  pricebook_id: message.sobject.PriceBook__c,
                 },
               });
               if (response) {
@@ -57,6 +58,31 @@ const main = async () => {
                 return response;
               }
               return "Created Account";
+            } else if (auth0.database && message.event.type === "updated") {
+              const params = {
+                search_engine: "v3",
+                q: `user_metadata.sfid:"${message.sobject.Id}"`,
+              };
+
+              const metadata = {
+                sfid: message.sobject.Id,
+                pricebook_id: message.sobject.Price_Book__c,
+              };
+              const user = await management.getUsers(params);
+
+              console.log("user: ", user);
+              management.updateUserMetadata(
+                {
+                  id: user[0].user_id as string,
+                },
+                metadata,
+                (user, error) => {
+                  if (error) {
+                    console.log(error);
+                  }
+                  console.log(user);
+                }
+              );
             } else if (message.event.type === "deleted") {
               const params = {
                 search_engine: "v3",
