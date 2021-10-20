@@ -47,6 +47,13 @@ const main = async () => {
                 user_metadata: {
                   sfid: message.sobject.Id,
                   pricebook_id: message.sobject.PriceBook__c,
+                  cart_id: message.sobject.Cart__c,
+                  address:
+                    message.sobject.MailingAddress ??
+                    message.sobject.MailingAddress,
+                  otherAddress:
+                    message.sobject.OtherAddress ??
+                    message.sobject.OtherAddress,
                 },
               });
               if (response) {
@@ -59,6 +66,7 @@ const main = async () => {
               }
               return "Created Account";
             } else if (auth0.database && message.event.type === "updated") {
+              console.log("UPDATING CONTACT");
               const params = {
                 search_engine: "v3",
                 q: `user_metadata.sfid:"${message.sobject.Id}"`,
@@ -67,6 +75,12 @@ const main = async () => {
               const metadata = {
                 sfid: message.sobject.Id,
                 pricebook_id: message.sobject.Price_Book__c,
+                cart_id: message.sobject.Cart__c ? message.sobject.Cart__c : "",
+                address:
+                  message.sobject.MailingAddress ??
+                  message.sobject.MailingAddress,
+                otherAddress:
+                  message.sobject.OtherAddress ?? message.sobject.OtherAddress,
               };
               const user = await management.getUsers(params);
 
@@ -112,7 +126,7 @@ const main = async () => {
     response.send(request.body); // echo the result back
   });
 
-  app.listen(parseInt(process.env.PORT), () => {
+  app.listen(parseInt(process.env.PORT as string), () => {
     console.log("server started on localhost:4000");
   });
 };
